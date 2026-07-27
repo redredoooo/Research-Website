@@ -147,6 +147,22 @@ async function ensureMemberUsers() {
         email_confirm: true,
         user_metadata: { full_name: member.full_name, role: member.role, isAdmin: member.isAdmin }
       });
+      // Try to upsert into credentials table so backend can read centralized credentials
+      try {
+        await supabase.from('profiles').upsert({
+          username: member.username,
+          email: member.email,
+          full_name: member.full_name,
+          role: member.role,
+          is_admin: member.isAdmin
+        }, { onConflict: ['username', 'email'] });
+      } catch (upsertErr) {
+        if (!/does not exist|relation .* does not exist/i.test(upsertErr?.message || '')) {
+          console.error('[auth] failed to upsert profile', member.username, upsertErr.message);
+        } else {
+          console.warn('[auth] profiles table not present; skipping upsert. Run migration to create it.');
+        }
+      }
     } catch (error) {
       if (!/already|duplicate|exists/i.test(error?.message || '')) {
         console.error('Failed to ensure member', member.username, error.message);
@@ -155,9 +171,49 @@ async function ensureMemberUsers() {
   }
 }
 
+async function seedProfilesTable() {
+  // Try to seed profiles table (non-fatal if table doesn't exist)
+  const seeds = [
+    { username: 'R.Sablang', email: 'redgelson@sablang.test', full_name: 'Redgelson Sablang', role: 'Researcher', is_admin: true },
+    { username: 'M.M.Sulit', email: 'mary@sulit.test', full_name: 'Mary Margarette Sulit', role: 'Research Leader', is_admin: true },
+    { username: 'B.J.Valencia', email: 'baron@valencia.test', full_name: 'Baron James Valencia', role: 'Researcher', is_admin: false }
+  ];
+  try {
+    await supabase.from('profiles').upsert(seeds, { onConflict: ['username', 'email'] });
+    console.info('[auth] seeded profiles table (if present)');
+  } catch (err) {
+    if (/does not exist|relation .* does not exist/i.test(err?.message || '')) {
+      console.warn('[auth] profiles table not found; run server/migrations/002_create_profiles.sql in Supabase to create it');
+    } else {
+      console.error('[auth] error seeding profiles table', err.message || err);
+    }
+  }
+}
+
 async function authenticateWithSupabase(identifier, password) {
   const email = resolveEmail(identifier);
   console.debug('[auth] attempting signInWithPassword for', email);
+  // First, attempt to read username→email mapping from the 'profiles' table.
+  try {
+    const { data: profileData, error: profileErr } = await supabase.from('profiles').select('*').eq('username', identifier).maybeSingle();
+    if (!profileErr && profileData) {
+      // Attempt to sign in via Supabase Auth using the mapped email and provided password
+      const retry = await supabase.auth.signInWithPassword({ email: profileData.email, password });
+      if (retry.error) {
+        console.error('[auth] signInWithPassword failed for', profileData.email, '-', retry.error.message || retry.error);
+        return retry;
+      }
+      console.debug('[auth] signInWithPassword success for', profileData.email);
+      return retry;
+    }
+  } catch (err) {
+    if (/does not exist|relation .* does not exist/i.test(err?.message || '')) {
+      console.warn('[auth] profiles table not present; falling back to default behavior');
+    } else {
+      console.error('[auth] error querying profiles table', err.message || err);
+    }
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (!error) {
     console.debug('[auth] signInWithPassword success for', email);
@@ -316,6 +372,7 @@ app.delete('/api/content/:type/:id', async (req, res) => {
 
 async function start() {
   await ensureMemberUsers();
+  await seedProfilesTable();
   app.listen(port, () => {
     console.log(`Research backend listening on port ${port}`);
   });
