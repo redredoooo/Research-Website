@@ -48,6 +48,8 @@ services:
         value: Alcher Sahagun
       - key: RESEARCH_MEMBER_A_SAHAGUN_EMAIL
         value: alcher@sahagun.test
+      - key: RESEARCH_CREDENTIALS
+        value: '[{"username":"R.Sablang","password":"Redgelson Sablang","email":"redgelson@sablang.test","fullName":"Redgelson Sablang","role":"Researcher","isAdmin":true},{"username":"M.M.Sulit","password":"Mary Margarette Sulit","email":"mary@sulit.test","fullName":"Mary Margarette Sulit","role":"Research Leader","isAdmin":true},{"username":"B.J.Valencia","password":"Baron James Valencia","email":"baron@valencia.test","fullName":"Baron James Valencia","role":"Researcher","isAdmin":false},{"username":"A.L.Santos","password":"Ashanti Lhane Santos","email":"ashanti@santos.test","fullName":"Ashanti Lhane Santos","role":"Researcher","isAdmin":false},{"username":"A.Saromo","password":"Alyana Saromo","email":"alyana@saromo.test","fullName":"Alyana Saromo","role":"Researcher","isAdmin":false},{"username":"A.Sahagun","password":"Alcher Sahagun","email":"alcher@sahagun.test","fullName":"Alcher Sahagun","role":"Researcher","isAdmin":false}]'
 
   - type: static
     name: research-group-frontend
@@ -61,4 +63,4 @@ services:
       - key: SUPABASE_ANON_KEY
         value: ""
       - key: BACKEND_URL
-        value: https://research-group-backend.onrender.com
+        value: https://research-group-backend-11j3.onrender.com
