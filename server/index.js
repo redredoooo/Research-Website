@@ -462,6 +462,66 @@ app.post('/api/auth/logout', async (_req, res) => {
   res.json({ ok: true });
 });
 
+// Register a new member (server-side). Requires service role key for admin create.
+app.post('/api/auth/register', async (req, res) => {
+  const { email, password, username, fullName, role } = req.body || {};
+  if (!email || !password || !username) {
+    return res.status(400).json({ error: 'email, password and username are required.' });
+  }
+
+  try {
+    const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName || username, role: role || 'Member', username }
+    });
+
+    if (createErr) {
+      return res.status(500).json({ error: createErr.message || createErr });
+    }
+
+    // Upsert into profiles table if present (non-fatal)
+    try {
+      await supabase.from('profiles').upsert({
+        username,
+        email,
+        full_name: fullName || username,
+        role: role || 'Member',
+        is_admin: Boolean(role === 'Admin')
+      }, { onConflict: ['username', 'email'] });
+    } catch (upsertErr) {
+      if (!/does not exist|relation .* does not exist/i.test(upsertErr?.message || '')) {
+        console.warn('[auth] profiles upsert failed', upsertErr.message || upsertErr);
+      }
+    }
+
+    return res.status(201).json({ user: created?.user || created });
+  } catch (err) {
+    console.error('[auth] register error', err?.message || err);
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
+// List members from the `profiles` table. Public for now; consider restricting.
+app.get('/api/members', async (_req, res) => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('*').order('username', { ascending: true });
+    if (error) {
+      if (/does not exist|relation .* does not exist/i.test(error?.message || '')) {
+        return res.status(404).json({ error: 'Profiles table not found. Run migrations to create it.' });
+      }
+      return res.status(500).json({ error: error.message || error });
+    }
+
+    const mapped = (data || []).map((p) => ({ username: p.username, email: p.email, fullName: p.full_name || p.fullName, role: p.role, isAdmin: Boolean(p.is_admin || p.isAdmin) }));
+    return res.json(mapped);
+  } catch (err) {
+    console.error('[members] list error', err?.message || err);
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
 app.get('/api/auth/me', async (req, res) => {
   const authHeader = req.headers.authorization || '';
   if (!authHeader.startsWith('Bearer ')) {
