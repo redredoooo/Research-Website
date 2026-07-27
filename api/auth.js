@@ -4,7 +4,7 @@
     { username: 'R.Sablang', fullName: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
     { username: 'M.M.Sulit', fullName: 'Mary Margarette Sulit', role: 'Research Leader', isAdmin: true },
     { username: 'B.J.Valencia', fullName: 'Baron James Valencia', role: 'Researcher', isAdmin: false },
-    { username: 'A.L.Santos', fullName: 'Ashanti Lhane', role: 'Researcher', isAdmin: false },
+    { username: 'A.L.Santos', fullName: 'Ashanti Lhane Santos', role: 'Researcher', isAdmin: false },
     { username: 'A.Saromo', fullName: 'Alyana Saromo', role: 'Researcher', isAdmin: false },
     { username: 'A.Sahagun', fullName: 'Alcher Sahagun', role: 'Researcher', isAdmin: false }
   ];

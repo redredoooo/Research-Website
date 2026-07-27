@@ -2,7 +2,7 @@ const teamMembers = [
   { username: 'R.Sablang', fullName: 'Redgelson Sablang', role: 'Researcher', initials: 'R.Sablang' },
   { username: 'M.M.Sulit', fullName: 'Mary Margarette Sulit', role: 'Research Lead', initials: 'M.M.Sulit' },
   { username: 'B.J.Valencia', fullName: 'Baron James Valencia', role: 'Researcher', initials: 'B.J.Valencia' },
-  { username: 'A.L.Santos', fullName: 'Ashanti Lhane', role: 'Researcher', initials: 'A.L.Santos' },
+  { username: 'A.L.Santos', fullName: 'Ashanti Lhane Santos', role: 'Researcher', initials: 'A.L.Santos' },
   { username: 'A.Saromo', fullName: 'Alyana Saromo', role: 'Researcher', initials: 'A.Saromo' },
   { username: 'A.Sahagun', fullName: 'Alcher Sahagun', role: 'Researcher', initials: 'A.Sahagun' }
 ];

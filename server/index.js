@@ -134,7 +134,7 @@ async function ensureMemberUsers() {
     { username: 'R.Sablang', email: 'redgelson@sablang.test', password: 'Redgelson Sablang', full_name: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
     { username: 'M.M.Sulit', email: 'mary@sulit.test', password: 'Mary Margarette Sulit', full_name: 'Mary Margarette Sulit', role: 'Research Leader', isAdmin: true },
     { username: 'B.J.Valencia', email: 'baron@valencia.test', password: 'Baron James Valencia', full_name: 'Baron James Valencia', role: 'Researcher', isAdmin: false },
-    { username: 'A.L.Santos', email: 'ashanti@santos.test', password: 'Ashanti Lhane', full_name: 'Ashanti Lhane', role: 'Researcher', isAdmin: false },
+    { username: 'A.L.Santos', email: 'ashanti@santos.test', password: 'Ashanti Lhane Santos', full_name: 'Ashanti Lhane Santos', role: 'Researcher', isAdmin: false },
     { username: 'A.Saromo', email: 'alyana@saromo.test', password: 'Alyana Saromo', full_name: 'Alyana Saromo', role: 'Researcher', isAdmin: false },
     { username: 'A.Sahagun', email: 'alcher@sahagun.test', password: 'Alcher Sahagun', full_name: 'Alcher Sahagun', role: 'Researcher', isAdmin: false }
   ];
@@ -166,7 +166,7 @@ async function authenticateWithSupabase(identifier, password) {
     { username: 'R.Sablang', email: 'redgelson@sablang.test', password: 'Redgelson Sablang', full_name: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
     { username: 'M.M.Sulit', email: 'mary@sulit.test', password: 'Mary Margarette Sulit', full_name: 'Mary Margarette Sulit', role: 'Research Leader', isAdmin: true },
     { username: 'B.J.Valencia', email: 'baron@valencia.test', password: 'Baron James Valencia', full_name: 'Baron James Valencia', role: 'Researcher', isAdmin: false },
-    { username: 'A.L.Santos', email: 'ashanti@santos.test', password: 'Ashanti Lhane', full_name: 'Ashanti Lhane', role: 'Researcher', isAdmin: false },
+    { username: 'A.L.Santos', email: 'ashanti@santos.test', password: 'Lhane Santos', full_name: 'Lhane Santos', role: 'Researcher', isAdmin: false },
     { username: 'A.Saromo', email: 'alyana@saromo.test', password: 'Alyana Saromo', full_name: 'Alyana Saromo', role: 'Researcher', isAdmin: false },
     { username: 'A.Sahagun', email: 'alcher@sahagun.test', password: 'Alcher Sahagun', full_name: 'Alcher Sahagun', role: 'Researcher', isAdmin: false }
   ].find((entry) => entry.username === identifier);
