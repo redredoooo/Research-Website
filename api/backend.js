@@ -45,9 +45,17 @@
         headers: { 'Content-Type': 'application/json' },
         body: body ? JSON.stringify(body) : undefined
       });
-      if (!response.ok) throw new Error('Request failed');
-      return await response.json();
+      if (!response.ok) {
+        return fallbackValue;
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        return await response.json();
+      }
+      return await response.text();
     } catch (error) {
+      console.error('Backend request failed', error);
       return fallbackValue;
     }
   }

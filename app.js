@@ -16,12 +16,11 @@ const state = {
   editingProjectId: null
 };
 
-window.__APP_CONFIG__ = {
-  backendUrl: '',
-  dataSource: 'local',
-  supabaseUrl: '',
-  supabaseAnonKey: ''
-};
+window.__APP_CONFIG__ = window.__APP_CONFIG__ || {};
+window.__APP_CONFIG__.backendUrl = window.__APP_CONFIG__.backendUrl || '';
+window.__APP_CONFIG__.dataSource = window.__APP_CONFIG__.dataSource || 'local';
+window.__APP_CONFIG__.supabaseUrl = window.__APP_CONFIG__.supabaseUrl || '';
+window.__APP_CONFIG__.supabaseAnonKey = window.__APP_CONFIG__.supabaseAnonKey || '';
 
 async function init() {
   bindEvents();
