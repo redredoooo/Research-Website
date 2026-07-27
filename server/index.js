@@ -9,6 +9,61 @@ app.use(express.json());
 const port = process.env.PORT || 3000;
 const supabaseUrl = process.env.SUPABASE_URL || 'https://nsdmvgrbzvapavoljzni.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZG12Z3JienZhcGF2b2xqem5pIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTE3MTY1NCwiZXhwIjoyMTAwNzQ3NjU0fQ.yoeoPajw4e20VILyS5GP-ltQAeIVwwOf2IgfxEYRuas';
+const configuredAuth = {
+  username: process.env.RESEARCH_LOGIN_USERNAME || process.env.LOGIN_USERNAME || '',
+  password: process.env.RESEARCH_LOGIN_PASSWORD || process.env.LOGIN_PASSWORD || '',
+  email: process.env.RESEARCH_LOGIN_EMAIL || process.env.LOGIN_EMAIL || ''
+};
+const configuredMembers = [
+  {
+    username: process.env.RESEARCH_MEMBER_R_SABLANG_USERNAME || process.env.RESEARCH_LOGIN_USERNAME || process.env.LOGIN_USERNAME || 'R.Sablang',
+    password: process.env.RESEARCH_MEMBER_R_SABLANG_PASSWORD || process.env.RESEARCH_LOGIN_PASSWORD || process.env.LOGIN_PASSWORD || 'Redgelson Sablang',
+    email: process.env.RESEARCH_MEMBER_R_SABLANG_EMAIL || process.env.RESEARCH_LOGIN_EMAIL || process.env.LOGIN_EMAIL || 'redgelson@sablang.test',
+    fullName: 'Redgelson Sablang',
+    role: 'Researcher',
+    isAdmin: true
+  },
+  {
+    username: process.env.RESEARCH_MEMBER_M_MSULIT_USERNAME || 'M.M.Sulit',
+    password: process.env.RESEARCH_MEMBER_M_MSULIT_PASSWORD || 'Mary Margarette Sulit',
+    email: process.env.RESEARCH_MEMBER_M_MSULIT_EMAIL || 'mary@sulit.test',
+    fullName: 'Mary Margarette Sulit',
+    role: 'Research Leader',
+    isAdmin: true
+  },
+  {
+    username: process.env.RESEARCH_MEMBER_B_JVALENCIA_USERNAME || 'B.J.Valencia',
+    password: process.env.RESEARCH_MEMBER_B_JVALENCIA_PASSWORD || 'Baron James Valencia',
+    email: process.env.RESEARCH_MEMBER_B_JVALENCIA_EMAIL || 'baron@valencia.test',
+    fullName: 'Baron James Valencia',
+    role: 'Researcher',
+    isAdmin: false
+  },
+  {
+    username: process.env.RESEARCH_MEMBER_A_LSANTOS_USERNAME || 'A.L.Santos',
+    password: process.env.RESEARCH_MEMBER_A_LSANTOS_PASSWORD || 'Ashanti Lhane Santos',
+    email: process.env.RESEARCH_MEMBER_A_LSANTOS_EMAIL || 'ashanti@santos.test',
+    fullName: 'Ashanti Lhane Santos',
+    role: 'Researcher',
+    isAdmin: false
+  },
+  {
+    username: process.env.RESEARCH_MEMBER_A_SAROMO_USERNAME || 'A.Saromo',
+    password: process.env.RESEARCH_MEMBER_A_SAROMO_PASSWORD || 'Alyana Saromo',
+    email: process.env.RESEARCH_MEMBER_A_SAROMO_EMAIL || 'alyana@saromo.test',
+    fullName: 'Alyana Saromo',
+    role: 'Researcher',
+    isAdmin: false
+  },
+  {
+    username: process.env.RESEARCH_MEMBER_A_SAHAGUN_USERNAME || 'A.Sahagun',
+    password: process.env.RESEARCH_MEMBER_A_SAHAGUN_PASSWORD || 'Alcher Sahagun',
+    email: process.env.RESEARCH_MEMBER_A_SAHAGUN_EMAIL || 'alcher@sahagun.test',
+    fullName: 'Alcher Sahagun',
+    role: 'Researcher',
+    isAdmin: false
+  }
+].filter((member) => member.username && member.password);
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,
@@ -27,6 +82,51 @@ const memberEmails = {
 
 function resolveEmail(identifier) {
   return memberEmails[identifier] || identifier;
+}
+
+function hasConfiguredAuth() {
+  return configuredMembers.length > 0;
+}
+
+async function authenticateWithConfiguredCredentials(identifier, password) {
+  if (!hasConfiguredAuth()) {
+    return { data: null, error: null };
+  }
+
+  const normalizedIdentifier = String(identifier || '').trim();
+  const normalizedPassword = String(password || '').trim();
+  const matchedMember = configuredMembers.find((member) => {
+    return normalizedIdentifier === member.username || normalizedIdentifier === member.email || normalizedIdentifier === member.fullName;
+  });
+
+  if (!matchedMember) {
+    return { data: null, error: null };
+  }
+
+  if (normalizedPassword !== matchedMember.password) {
+    return { data: null, error: new Error('Invalid credentials.') };
+  }
+
+  const user = {
+    id: `env-configured-auth-${matchedMember.username}`,
+    email: matchedMember.email,
+    user_metadata: {
+      full_name: matchedMember.fullName,
+      role: matchedMember.role,
+      isAdmin: Boolean(matchedMember.isAdmin)
+    }
+  };
+
+  return {
+    data: {
+      user,
+      session: {
+        access_token: 'env-configured-session',
+        token_type: 'bearer'
+      }
+    },
+    error: null
+  };
 }
 
 function mapPayload(type, item) {
@@ -267,6 +367,27 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   console.info('[auth] login attempt for identifier:', identifier);
+  const configuredResult = await authenticateWithConfiguredCredentials(identifier, password);
+  if (configuredResult.error || configuredResult.data) {
+    if (configuredResult.error) {
+      console.error('[auth] configured credentials login failed for', identifier, '-', configuredResult.error.message);
+      return res.status(401).json({ error: configuredResult.error.message });
+    }
+
+    const { data } = configuredResult;
+    return res.json({
+      user: {
+        id: data.user?.id,
+        username: identifier,
+        fullName: data.user?.user_metadata?.full_name || identifier,
+        email: data.user?.email,
+        role: data.user?.user_metadata?.role || 'Member',
+        isAdmin: Boolean(data.user?.user_metadata?.isAdmin)
+      },
+      session: data.session
+    });
+  }
+
   const { data, error } = await authenticateWithSupabase(identifier, password);
 
   if (error) {
@@ -378,4 +499,11 @@ async function start() {
   });
 }
 
-start();
+if (require.main === module) {
+  start();
+}
+
+module.exports = {
+  app,
+  authenticateWithConfiguredCredentials
+};
