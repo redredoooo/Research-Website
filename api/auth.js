@@ -1,12 +1,12 @@
 (function () {
   const STORAGE_KEY = 'research-group-auth';
   const fallbackUsers = [
-    { username: 'R.Sablang', password: 'Redgelson Sablang', fullName: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
-    { username: 'M.M.Sulit', password: 'Mary Margarette Sulit', fullName: 'Mary Margarette Sulit', role: 'Research Leader', isAdmin: true },
-    { username: 'B.J.Valencia', password: 'Baron James Valencia', fullName: 'Baron James Valencia', role: 'Researcher', isAdmin: false },
-    { username: 'A.L.Santos', password: 'Ashanti Lhane', fullName: 'Ashanti Lhane', role: 'Researcher', isAdmin: false },
-    { username: 'A.Saromo', password: 'Alyana Saromo', fullName: 'Alyana Saromo', role: 'Researcher', isAdmin: false },
-    { username: 'A.Sahagun', password: 'Alcher Sahagun', fullName: 'Alcher Sahagun', role: 'Researcher', isAdmin: false }
+    { username: 'R.Sablang', fullName: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
+    { username: 'M.M.Sulit', fullName: 'Mary Margarette Sulit', role: 'Research Leader', isAdmin: true },
+    { username: 'B.J.Valencia', fullName: 'Baron James Valencia', role: 'Researcher', isAdmin: false },
+    { username: 'A.L.Santos', fullName: 'Ashanti Lhane', role: 'Researcher', isAdmin: false },
+    { username: 'A.Saromo', fullName: 'Alyana Saromo', role: 'Researcher', isAdmin: false },
+    { username: 'A.Sahagun', fullName: 'Alcher Sahagun', role: 'Researcher', isAdmin: false }
   ];
 
   function getUsers() {
@@ -20,31 +20,29 @@
 
   async function login(username, password) {
     const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
-    if (backendUrl) {
-      try {
-        const response = await fetch(`${backendUrl}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: username, password })
-        });
-        const payload = await response.json();
-        if (!response.ok || !payload?.user) {
-          return null;
-        }
-        setCurrentUser({
-          ...payload.user,
-          accessToken: payload.session?.access_token || ''
-        });
-        return payload.user;
-      } catch (error) {
-        console.error('Auth request failed', error);
-      }
+    if (!backendUrl) {
+      return null;
     }
 
-    const fallbackUser = fallbackUsers.find((entry) => entry.username === username && entry.password === password);
-    if (!fallbackUser) return null;
-    setCurrentUser(fallbackUser);
-    return fallbackUser;
+    try {
+      const response = await fetch(`${backendUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: username, password })
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload?.user) {
+        return null;
+      }
+      setCurrentUser({
+        ...payload.user,
+        accessToken: payload.session?.access_token || ''
+      });
+      return payload.user;
+    } catch (error) {
+      console.error('Auth request failed', error);
+      return null;
+    }
   }
 
   async function logout() {
