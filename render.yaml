@@ -12,3 +12,17 @@ services:
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIn0.ghY80cW3fP0LqE5iu4u5uKk9h947LrM6eZ1QhQleZ9k
       - key: SUPABASE_SERVICE_ROLE_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZG12Z3JienZhcGF2b2xqem5pIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTE3MTY1NCwiZXhwIjoyMTAwNzQ3NjU0fQ.yoeoPajw4e20VILyS5GP-ltQAeIVwwOf2IgfxEYRuas
+
+  - type: static
+    name: research-group-frontend
+    env: static
+    plan: free
+    staticPublishPath: .
+    buildCommand: ""
+    envVars:
+      - key: SUPABASE_URL
+        value: https://nsdmvgrbzvapavoljzni.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: ""
+      - key: BACKEND_URL
+        value: https://research-group-backend.onrender.com

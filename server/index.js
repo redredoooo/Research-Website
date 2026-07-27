@@ -157,10 +157,13 @@ async function ensureMemberUsers() {
 
 async function authenticateWithSupabase(identifier, password) {
   const email = resolveEmail(identifier);
+  console.debug('[auth] attempting signInWithPassword for', email);
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (!error) {
+    console.debug('[auth] signInWithPassword success for', email);
     return { data, error: null };
   }
+  console.debug('[auth] signInWithPassword error for', email, '-', error?.message || error);
 
   const member = [
     { username: 'R.Sablang', email: 'redgelson@sablang.test', password: 'Redgelson Sablang', full_name: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
@@ -181,14 +184,16 @@ async function authenticateWithSupabase(identifier, password) {
       });
     } catch (creationError) {
       if (!/already|duplicate|exists/i.test(creationError?.message || '')) {
-        console.error('Failed to create member user', creationError.message);
+        console.error('[auth] Failed to create member user', member.username, creationError.message);
       }
     }
 
     const retry = await supabase.auth.signInWithPassword({ email: member.email, password: member.password });
     if (retry.error) {
+      console.error('[auth] retry signInWithPassword failed for', member.email, '-', retry.error.message || retry.error);
       return retry;
     }
+    console.debug('[auth] retry signInWithPassword success for', member.email);
     return retry;
   }
 
@@ -205,7 +210,12 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(400).json({ error: 'Identifier and password are required.' });
   }
 
+  console.info('[auth] login attempt for identifier:', identifier);
   const { data, error } = await authenticateWithSupabase(identifier, password);
+
+  if (error) {
+    console.error('[auth] login failed for', identifier, '-', error?.message || error);
+  }
 
   if (error) {
     return res.status(401).json({ error: error.message });
