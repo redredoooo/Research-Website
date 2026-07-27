@@ -49,9 +49,9 @@
                 <button class="btn btn-secondary" id="openLogin">Member Login</button>
               </div>
               <div class="status-row">
-                <span class="chip">• Local-first experience</span>
+                <span class="chip">• Supabase-backed data</span>
                 <span class="chip">• Author-tracked content</span>
-                <span class="chip">• Offline-ready cache</span>
+                <span class="chip">• Render-ready backend</span>
               </div>
             </div>
             <div class="hero-visual">
@@ -247,8 +247,8 @@
           </label>
           <button class="btn btn-primary" type="submit">Sign in</button>
         </form>
-        <p class="muted">Enter the username and password exactly as provided by the research office.</p>
-        <p class="muted">Backend target: Render API + Supabase data layer (configurable through the app bootstrap).</p>
+        <p class="muted">Sign in with your member account to create or manage content.</p>
+        <p class="muted">Authentication now routes through the Render backend and Supabase Auth layer.</p>
       </div>
     </div>
 
@@ -384,9 +384,12 @@
 
     <div id="toastContainer" class="toast-container"></div>
 
+    <script src="./config.js"></script>
     <script src="./api/auth.js"></script>
+    <script src="./api/backend.js"></script>
     <script src="./api/content.js"></script>
     <script src="./api/cache.js"></script>
+    <script src="./supabase-client.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

@@ -1,10 +1,10 @@
 const teamMembers = [
-  { username: 'R.Sablang', fullName: 'Redgelson Sablang', role: 'Principal Investigator', initials: 'RS' },
-  { username: 'M.M.Sulit', fullName: 'Mary Margarette Sulit', role: 'Systems Architect', initials: 'MS' },
-  { username: 'B.J.Valencia', fullName: 'Baron James Valencia', role: 'Research Lead', initials: 'BV' },
-  { username: 'A.L.Santos', fullName: 'Ashanti Lhane', role: 'Community Scientist', initials: 'AS' },
-  { username: 'A.Saromo', fullName: 'Alyana Saromo', role: 'Data Strategist', initials: 'AY' },
-  { username: 'A.Sahagun', fullName: 'Alcher Sahagun', role: 'Knowledge Curator', initials: 'AL' }
+  { username: 'R.Sablang', fullName: 'Redgelson Sablang', role: 'Researcher', initials: 'R.Sablang' },
+  { username: 'M.M.Sulit', fullName: 'Mary Margarette Sulit', role: 'Research Lead', initials: 'M.M.Sulit' },
+  { username: 'B.J.Valencia', fullName: 'Baron James Valencia', role: 'Researcher', initials: 'B.J.Valencia' },
+  { username: 'A.L.Santos', fullName: 'Ashanti Lhane', role: 'Researcher', initials: 'A.L.Santos' },
+  { username: 'A.Saromo', fullName: 'Alyana Saromo', role: 'Researcher', initials: 'A.Saromo' },
+  { username: 'A.Sahagun', fullName: 'Alcher Sahagun', role: 'Researcher', initials: 'A.Sahagun' }
 ];
 
 const state = {
@@ -23,9 +23,12 @@ window.__APP_CONFIG__ = {
   supabaseAnonKey: ''
 };
 
-function init() {
+async function init() {
   bindEvents();
   cacheApi.write('app-state', { lastOpened: new Date().toISOString(), theme: 'light' });
+  if (window.__APP_CONFIG__?.dataSource === 'supabase') {
+    await contentApi.loadStateAsync();
+  }
   render();
   if (!authApi.getCurrentUser()) {
     showToast('Guest mode enabled. Browse public research updates.');
@@ -43,10 +46,10 @@ function bindEvents() {
     });
   });
 
-  document.getElementById('authTrigger').addEventListener('click', () => {
+  document.getElementById('authTrigger').addEventListener('click', async () => {
     const currentUser = authApi.getCurrentUser();
     if (currentUser) {
-      authApi.logout();
+      await authApi.logout();
       render();
       showToast('Signed out successfully.');
     } else {
@@ -59,13 +62,13 @@ function bindEvents() {
   document.getElementById('closeDocModal').addEventListener('click', () => closeModal('docModal'));
   document.getElementById('closeProjectModal').addEventListener('click', () => closeModal('projectModal'));
 
-  document.getElementById('loginForm').addEventListener('submit', (event) => {
+  document.getElementById('loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
-    const user = authApi.login(username, password);
+    const user = await authApi.login(username, password);
     if (!user) {
-      showToast('Invalid credentials. Try one of the preconfigured accounts.', 'error');
+      showToast('Invalid credentials. Please try again with your member account.', 'error');
       return;
     }
     closeModal('authModal');

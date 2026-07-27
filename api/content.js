@@ -1,6 +1,100 @@
 (function () {
   const STORAGE_KEY = 'research-group-content';
 
+  function mapRemoteItem(item, type) {
+    if (type === 'posts') {
+      return {
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        category: item.category,
+        link: item.link,
+        attachmentLabel: item.attachmentLabel || item.attachment_label,
+        attachmentData: item.attachmentData || item.attachment_data,
+        fileName: item.fileName || item.file_name,
+        authorUsername: item.authorUsername || item.author_username,
+        authorName: item.authorName || item.author_name,
+        createdAt: item.createdAt || item.created_at,
+        updatedAt: item.updatedAt || item.updated_at
+      };
+    }
+
+    if (type === 'documents') {
+      return {
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        category: item.category,
+        link: item.link,
+        markdown: item.markdown,
+        attachmentLabel: item.attachmentLabel || item.attachment_label,
+        attachmentData: item.attachmentData || item.attachment_data,
+        fileName: item.fileName || item.file_name,
+        authorUsername: item.authorUsername || item.author_username,
+        authorName: item.authorName || item.author_name,
+        createdAt: item.createdAt || item.created_at,
+        updatedAt: item.updatedAt || item.updated_at
+      };
+    }
+
+    return {
+      id: item.id,
+      title: item.title,
+      body: item.body,
+      status: item.status,
+      progress: item.progress,
+      link: item.link,
+      authorUsername: item.authorUsername || item.author_username,
+      authorName: item.authorName || item.author_name,
+      createdAt: item.createdAt || item.created_at,
+      updatedAt: item.updatedAt || item.updated_at
+    };
+  }
+
+  async function readFromBackend() {
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (!backendUrl || !window.backendApi?.request) return null;
+
+    try {
+      const [posts, documents, projects] = await Promise.all([
+        window.backendApi.request({ endpoint: '/api/content/posts' }),
+        window.backendApi.request({ endpoint: '/api/content/documents' }),
+        window.backendApi.request({ endpoint: '/api/content/projects' })
+      ]);
+
+      if (!Array.isArray(posts) || !Array.isArray(documents) || !Array.isArray(projects)) {
+        return null;
+      }
+
+      return {
+        posts: posts.map((item) => mapRemoteItem(item, 'posts')),
+        documents: documents.map((item) => mapRemoteItem(item, 'documents')),
+        projects: projects.map((item) => mapRemoteItem(item, 'projects'))
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function readFromSupabase() {
+    if (!window.supabaseClient) return null;
+    const [postsRes, docsRes, projectsRes] = await Promise.all([
+      window.supabaseClient.from('posts').select('*').order('created_at', { ascending: false }),
+      window.supabaseClient.from('documents').select('*').order('created_at', { ascending: false }),
+      window.supabaseClient.from('projects').select('*').order('created_at', { ascending: false })
+    ]);
+
+    if (postsRes.error || docsRes.error || projectsRes.error) {
+      return null;
+    }
+
+    return {
+      posts: (postsRes.data || []).map((item) => mapRemoteItem(item, 'posts')),
+      documents: (docsRes.data || []).map((item) => mapRemoteItem(item, 'documents')),
+      projects: (projectsRes.data || []).map((item) => mapRemoteItem(item, 'projects'))
+    };
+  }
+
   function getDefaultState() {
     return {
       posts: [
@@ -84,6 +178,34 @@
     };
   }
 
+  async function loadStateAsync() {
+    const remoteState = await readFromBackend();
+    if (remoteState) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteState));
+      return remoteState;
+    }
+
+    const supabaseState = await readFromSupabase();
+    if (supabaseState) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(supabaseState));
+      return supabaseState;
+    }
+
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      const initial = getDefaultState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      return initial;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      const initial = getDefaultState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      return initial;
+    }
+  }
+
   function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -104,7 +226,7 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
-  function createPost(payload) {
+  async function createPost(payload) {
     const state = loadState();
     const item = {
       id: `post-${Date.now()}`,
@@ -114,23 +236,94 @@
     };
     state.posts.unshift(item);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      const remoteItem = await window.backendApi.request({ endpoint: '/api/content/posts', method: 'POST', body: item, fallbackValue: null });
+      if (remoteItem) {
+        state.posts = state.posts.filter((entry) => entry.id !== item.id);
+        state.posts.unshift(mapRemoteItem(remoteItem, 'posts'));
+        saveState(state);
+        return state.posts[0];
+      }
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('posts').insert({
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        category: item.category,
+        link: item.link,
+        attachment_label: item.attachmentLabel,
+        attachment_data: item.attachmentData,
+        file_name: item.fileName,
+        author_username: item.authorUsername,
+        author_name: item.authorName,
+        created_at: item.createdAt,
+        updated_at: item.updatedAt
+      });
+      if (error) {
+        console.error(error);
+      }
+    }
     return item;
   }
 
-  function updatePost(id, payload) {
+  async function updatePost(id, payload) {
     const state = loadState();
     state.posts = state.posts.map((item) => item.id === id ? { ...item, ...payload, updatedAt: new Date().toISOString() } : item);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      const remoteItem = await window.backendApi.request({ endpoint: `/api/content/posts/${id}`, method: 'PUT', body: { ...payload, id }, fallbackValue: null });
+      if (remoteItem) {
+        state.posts = state.posts.map((item) => item.id === id ? mapRemoteItem(remoteItem, 'posts') : item);
+        saveState(state);
+        return state.posts.find((item) => item.id === id);
+      }
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('posts').update({
+        title: payload.title,
+        body: payload.body,
+        category: payload.category,
+        link: payload.link,
+        attachment_label: payload.attachmentLabel,
+        attachment_data: payload.attachmentData,
+        file_name: payload.fileName,
+        author_username: payload.authorUsername,
+        author_name: payload.authorName,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) {
+        console.error(error);
+      }
+    }
     return state.posts.find((item) => item.id === id);
   }
 
-  function deletePost(id) {
+  async function deletePost(id) {
     const state = loadState();
     state.posts = state.posts.filter((item) => item.id !== id);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      await window.backendApi.request({ endpoint: `/api/content/posts/${id}`, method: 'DELETE', fallbackValue: null });
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('posts').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+      }
+    }
   }
 
-  function createDocument(payload) {
+  async function createDocument(payload) {
     const state = loadState();
     const item = {
       id: `doc-${Date.now()}`,
@@ -140,23 +333,96 @@
     };
     state.documents.unshift(item);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      const remoteItem = await window.backendApi.request({ endpoint: '/api/content/documents', method: 'POST', body: item, fallbackValue: null });
+      if (remoteItem) {
+        state.documents = state.documents.filter((entry) => entry.id !== item.id);
+        state.documents.unshift(mapRemoteItem(remoteItem, 'documents'));
+        saveState(state);
+        return state.documents[0];
+      }
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('documents').insert({
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        category: item.category,
+        link: item.link,
+        markdown: item.markdown,
+        attachment_label: item.attachmentLabel,
+        attachment_data: item.attachmentData,
+        file_name: item.fileName,
+        author_username: item.authorUsername,
+        author_name: item.authorName,
+        created_at: item.createdAt,
+        updated_at: item.updatedAt
+      });
+      if (error) {
+        console.error(error);
+      }
+    }
     return item;
   }
 
-  function updateDocument(id, payload) {
+  async function updateDocument(id, payload) {
     const state = loadState();
     state.documents = state.documents.map((item) => item.id === id ? { ...item, ...payload, updatedAt: new Date().toISOString() } : item);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      const remoteItem = await window.backendApi.request({ endpoint: `/api/content/documents/${id}`, method: 'PUT', body: { ...payload, id }, fallbackValue: null });
+      if (remoteItem) {
+        state.documents = state.documents.map((item) => item.id === id ? mapRemoteItem(remoteItem, 'documents') : item);
+        saveState(state);
+        return state.documents.find((item) => item.id === id);
+      }
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('documents').update({
+        title: payload.title,
+        body: payload.body,
+        category: payload.category,
+        link: payload.link,
+        markdown: payload.markdown,
+        attachment_label: payload.attachmentLabel,
+        attachment_data: payload.attachmentData,
+        file_name: payload.fileName,
+        author_username: payload.authorUsername,
+        author_name: payload.authorName,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) {
+        console.error(error);
+      }
+    }
     return state.documents.find((item) => item.id === id);
   }
 
-  function deleteDocument(id) {
+  async function deleteDocument(id) {
     const state = loadState();
     state.documents = state.documents.filter((item) => item.id !== id);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      await window.backendApi.request({ endpoint: `/api/content/documents/${id}`, method: 'DELETE', fallbackValue: null });
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('documents').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+      }
+    }
   }
 
-  function createProject(payload) {
+  async function createProject(payload) {
     const state = loadState();
     const item = {
       id: `project-${Date.now()}`,
@@ -166,20 +432,91 @@
     };
     state.projects.unshift(item);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      const remoteItem = await window.backendApi.request({ endpoint: '/api/content/projects', method: 'POST', body: item, fallbackValue: null });
+      if (remoteItem) {
+        state.projects = state.projects.filter((entry) => entry.id !== item.id);
+        state.projects.unshift(mapRemoteItem(remoteItem, 'projects'));
+        saveState(state);
+        return state.projects[0];
+      }
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('projects').insert({
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        status: item.status,
+        progress: item.progress,
+        link: item.link,
+        author_username: item.authorUsername,
+        author_name: item.authorName,
+        created_at: item.createdAt,
+        updated_at: item.updatedAt
+      });
+      if (error) {
+        console.error(error);
+      }
+    }
     return item;
   }
 
-  function updateProject(id, payload) {
+  async function updateProject(id, payload) {
     const state = loadState();
     state.projects = state.projects.map((item) => item.id === id ? { ...item, ...payload, updatedAt: new Date().toISOString() } : item);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      const remoteItem = await window.backendApi.request({ endpoint: `/api/content/projects/${id}`, method: 'PUT', body: { ...payload, id }, fallbackValue: null });
+      if (remoteItem) {
+        state.projects = state.projects.map((item) => item.id === id ? mapRemoteItem(remoteItem, 'projects') : item);
+        saveState(state);
+        return state.projects.find((item) => item.id === id);
+      }
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('projects').update({
+        title: payload.title,
+        body: payload.body,
+        status: payload.status,
+        progress: payload.progress,
+        link: payload.link,
+        author_username: payload.authorUsername,
+        author_name: payload.authorName,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) {
+        console.error(error);
+      }
+    }
     return state.projects.find((item) => item.id === id);
   }
 
-  function deleteProject(id) {
+  async function deleteProject(id) {
     const state = loadState();
     state.projects = state.projects.filter((item) => item.id !== id);
     saveState(state);
+
+    const backendUrl = window.__APP_CONFIG__?.backendUrl || '';
+    if (backendUrl && window.backendApi?.request) {
+      await window.backendApi.request({ endpoint: `/api/content/projects/${id}`, method: 'DELETE', fallbackValue: null });
+    }
+
+    if (window.supabaseClient) {
+      const { error } = await window.supabaseClient.from('projects').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  async function getStateAsync() {
+    return loadStateAsync();
   }
 
   function getState() {
@@ -197,7 +534,9 @@
 
   window.contentApi = {
     loadState,
+    loadStateAsync,
     getState,
+    getStateAsync,
     getFeedItems,
     createPost,
     updatePost,
