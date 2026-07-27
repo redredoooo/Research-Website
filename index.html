@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Research Group Studio</title>
+    <meta name="description" content="A polished, Apple-inspired research group workspace with auth, content boards, documentation, and project hub." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="min-h-screen">
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark">R</div>
+          <div>
+            <p class="eyebrow">Research Group</p>
+            <h1>Research Studio</h1>
+          </div>
+        </div>
+        <nav class="desktop-nav" aria-label="Primary navigation">
+          <button class="nav-pill active" data-page="home">Home</button>
+          <button class="nav-pill" data-page="dashboard">Dashboard</button>
+          <button class="nav-pill" data-page="content">Content Board</button>
+          <button class="nav-pill" data-page="docs">Documentation</button>
+          <button class="nav-pill" data-page="projects">Projects</button>
+        </nav>
+        <div class="topbar-actions">
+          <label class="search-pill">
+            <span>⌕</span>
+            <input id="globalSearch" placeholder="Search updates" />
+          </label>
+          <button id="authTrigger" class="auth-pill">Guest</button>
+        </div>
+      </header>
+
+      <main class="main-content">
+        <section id="homePage" class="page-section active">
+          <div class="hero-card card">
+            <div class="hero-copy">
+              <p class="eyebrow">Scientific collaboration • verified members</p>
+              <h2>Building rigorous research experiences with clarity, care, and momentum.</h2>
+              <p class="hero-description">A modern home for collaboration, publication workflows, and the knowledge base behind every milestone.</p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" data-page="content">Explore Research</button>
+                <button class="btn btn-secondary" id="openLogin">Member Login</button>
+              </div>
+              <div class="status-row">
+                <span class="chip">• Local-first experience</span>
+                <span class="chip">• Author-tracked content</span>
+                <span class="chip">• Offline-ready cache</span>
+              </div>
+            </div>
+            <div class="hero-visual">
+              <div class="glass-panel">
+                <p class="panel-label">Live research pulse</p>
+                <div class="metric-grid">
+                  <div class="mini-metric">
+                    <strong id="pubCount">0</strong>
+                    <span>Publications</span>
+                  </div>
+                  <div class="mini-metric">
+                    <strong id="grantCount">0</strong>
+                    <span>Active Grants</span>
+                  </div>
+                  <div class="mini-metric">
+                    <strong id="memberCount">0</strong>
+                    <span>Lab Members</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <article class="card stat-card">
+              <p class="eyebrow">Live feed</p>
+              <h3 id="feedCount">0 synchronized updates</h3>
+              <p class="muted">Content board posts, documentation, and project milestones shared in real time.</p>
+            </article>
+            <article class="card stat-card">
+              <p class="eyebrow">Author coverage</p>
+              <h3 id="authorCount">0 tracked creators</h3>
+              <p class="muted">Each contribution carries the active member signature and edit rights.</p>
+            </article>
+            <article class="card stat-card">
+              <p class="eyebrow">Cache status</p>
+              <h3 id="cacheStatus">Stored locally</h3>
+              <p class="muted">The workspace remains available instantly after the first load.</p>
+            </article>
+          </div>
+
+          <div class="page-grid">
+            <section class="card section-card">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Synchronized feed</p>
+                  <h3>Latest research updates</h3>
+                </div>
+                <span class="chip">Author badges included</span>
+              </div>
+              <div id="liveFeed" class="feed-list"></div>
+            </section>
+            <section class="card section-card">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Team roster</p>
+                  <h3>Verified members</h3>
+                </div>
+                <span class="chip">6 active profiles</span>
+              </div>
+              <div id="teamRoster" class="team-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="dashboardPage" class="page-section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Activity overview</p>
+              <h3>Member workspace</h3>
+            </div>
+            <div id="memberBadge" class="chip"></div>
+          </div>
+          <div class="stats-grid">
+            <article class="card stat-card">
+              <p class="eyebrow">Content board</p>
+              <h3 id="postStat">0 posts</h3>
+              <p class="muted">Announcements and shared research notes.</p>
+            </article>
+            <article class="card stat-card">
+              <p class="eyebrow">Documents</p>
+              <h3 id="docStat">0 docs</h3>
+              <p class="muted">Protocols, meeting logs, and code snippets.</p>
+            </article>
+            <article class="card stat-card">
+              <p class="eyebrow">Projects</p>
+              <h3 id="projectStat">0 active projects</h3>
+              <p class="muted">Milestones with clear status and links.</p>
+            </article>
+          </div>
+          <div class="card creator-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Quick creator bar</p>
+                <h3>Publish in seconds</h3>
+              </div>
+              <span class="chip">Visible to verified members</span>
+            </div>
+            <div class="action-grid">
+              <button class="btn btn-primary" data-page="content">New content post</button>
+              <button class="btn btn-secondary" data-page="docs">New documentation</button>
+              <button class="btn btn-secondary" data-page="projects">Add project</button>
+            </div>
+          </div>
+          <div class="card section-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Recent activity</p>
+                <h3>Latest contributions</h3>
+              </div>
+            </div>
+            <div id="recentActivity" class="feed-list"></div>
+          </div>
+        </section>
+
+        <section id="contentPage" class="page-section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Content board</p>
+              <h3>Public feed and member updates</h3>
+            </div>
+            <button id="createPostBtn" class="btn btn-primary">Create post</button>
+          </div>
+          <div class="filter-row">
+            <select id="contentFilter">
+              <option value="all">All categories</option>
+              <option value="announcement">Announcements</option>
+              <option value="research">Research Notes</option>
+              <option value="resource">Resources</option>
+            </select>
+          </div>
+          <div id="contentBoard" class="feed-list"></div>
+        </section>
+
+        <section id="docsPage" class="page-section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Documentation repository</p>
+              <h3>Protocols, notes, and knowledge base</h3>
+            </div>
+            <button id="createDocBtn" class="btn btn-primary">Add document</button>
+          </div>
+          <div class="filter-row">
+            <select id="docFilter">
+              <option value="All">All categories</option>
+              <option value="Protocol">Protocol</option>
+              <option value="Guideline">Guideline</option>
+              <option value="Dataset">Dataset</option>
+              <option value="Meeting">Meeting</option>
+            </select>
+          </div>
+          <div id="docsList" class="docs-grid"></div>
+        </section>
+
+        <section id="projectsPage" class="page-section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Projects & research hub</p>
+              <h3>Milestones, progress, and linked documentation</h3>
+            </div>
+            <button id="createProjectBtn" class="btn btn-primary">Add project</button>
+          </div>
+          <div id="projectsList" class="projects-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <button class="mobile-nav-btn active" data-page="home">Home</button>
+      <button class="mobile-nav-btn" data-page="dashboard">Dash</button>
+      <button class="mobile-nav-btn" data-page="content">Feed</button>
+      <button class="mobile-nav-btn" data-page="docs">Docs</button>
+      <button class="mobile-nav-btn" data-page="projects">Projects</button>
+    </nav>
+
+    <div id="authModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Member access</p>
+            <h3>Sign in with a verified account</h3>
+          </div>
+          <button id="closeAuthModal" class="icon-btn">×</button>
+        </div>
+        <form id="loginForm" class="stacked-form">
+          <label>
+            Username
+            <input id="loginUsername" name="username" placeholder="R.Sablang" required />
+          </label>
+          <label>
+            Password
+            <input id="loginPassword" name="password" type="password" placeholder="Redgelson Sablang" required />
+          </label>
+          <button class="btn btn-primary" type="submit">Sign in</button>
+        </form>
+        <p class="muted">Enter the username and password exactly as provided by the research office.</p>
+        <p class="muted">Backend target: Render API + Supabase data layer (configurable through the app bootstrap).</p>
+      </div>
+    </div>
+
+    <div id="contentModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Creator workspace</p>
+            <h3 id="modalTitle">Create a post</h3>
+          </div>
+          <button id="closeContentModal" class="icon-btn">×</button>
+        </div>
+        <form id="postForm" class="stacked-form">
+          <input type="hidden" id="editType" />
+          <input type="hidden" id="editId" />
+          <label>
+            Title
+            <input id="postTitle" required />
+          </label>
+          <label>
+            Category
+            <select id="postCategory">
+              <option value="announcement">Announcement</option>
+              <option value="research">Research Note</option>
+              <option value="resource">Resource</option>
+            </select>
+          </label>
+          <label>
+            Content
+            <textarea id="postBody" rows="4" required></textarea>
+          </label>
+          <label>
+            Resource URL / file reference
+            <input id="postLink" placeholder="https://... or protocol://..." />
+          </label>
+          <label>
+            Attachment label
+            <input id="postAttachment" placeholder="PDF, dataset, slide deck" />
+          </label>
+          <label>
+            Upload file (optional)
+            <input id="postFile" type="file" />
+          </label>
+          <button class="btn btn-primary" type="submit">Publish</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="docModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Documentation</p>
+            <h3 id="docModalTitle">Add a document</h3>
+          </div>
+          <button id="closeDocModal" class="icon-btn">×</button>
+        </div>
+        <form id="docForm" class="stacked-form">
+          <input type="hidden" id="editDocId" />
+          <label>
+            Title
+            <input id="docTitle" required />
+          </label>
+          <label>
+            Category
+            <select id="docCategory">
+              <option value="Protocol">Protocol</option>
+              <option value="Guideline">Guideline</option>
+              <option value="Dataset">Dataset</option>
+              <option value="Meeting">Meeting</option>
+            </select>
+          </label>
+          <label>
+            Summary
+            <textarea id="docBody" rows="4" required></textarea>
+          </label>
+          <label>
+            Resource URL
+            <input id="docLink" placeholder="https://..." />
+          </label>
+          <label>
+            Raw markdown / notes
+            <textarea id="docMarkdown" rows="4" placeholder="# Research note"></textarea>
+          </label>
+          <label>
+            Upload supporting file (optional)
+            <input id="docFile" type="file" />
+          </label>
+          <button class="btn btn-primary" type="submit">Save document</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="projectModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card card">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Projects</p>
+            <h3 id="projectModalTitle">Add a project</h3>
+          </div>
+          <button id="closeProjectModal" class="icon-btn">×</button>
+        </div>
+        <form id="projectForm" class="stacked-form">
+          <input type="hidden" id="editProjectId" />
+          <label>
+            Project title
+            <input id="projectTitle" required />
+          </label>
+          <label>
+            Status
+            <select id="projectStatus">
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+              <option value="Under Review">Under Review</option>
+            </select>
+          </label>
+          <label>
+            Summary
+            <textarea id="projectBody" rows="4" required></textarea>
+          </label>
+          <label>
+            Progress (%)
+            <input id="projectProgress" type="number" min="0" max="100" value="40" />
+          </label>
+          <label>
+            Documentation link
+            <input id="projectLink" placeholder="Link to protocol or milestone" />
+          </label>
+          <button class="btn btn-primary" type="submit">Save project</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="./api/auth.js"></script>
+    <script src="./api/content.js"></script>
+    <script src="./api/cache.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
