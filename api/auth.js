@@ -1,12 +1,12 @@
 (function () {
   const STORAGE_KEY = 'research-group-auth';
   const users = [
-    { username: 'R.Sablang', password: 'Redgelson Sablang', fullName: 'Redgelson Sablang', role: 'Principal Investigator', isAdmin: true },
-    { username: 'M.M.Sulit', password: 'Mary Margarette Sulit', fullName: 'Mary Margarette Sulit', role: 'Systems Architect', isAdmin: true },
-    { username: 'B.J.Valencia', password: 'Baron James Valencia', fullName: 'Baron James Valencia', role: 'Research Lead', isAdmin: false },
-    { username: 'A.L.Santos', password: 'Ashanti Lhane', fullName: 'Ashanti Lhane', role: 'Community Scientist', isAdmin: false },
-    { username: 'A.Saromo', password: 'Alyana Saromo', fullName: 'Alyana Saromo', role: 'Data Strategist', isAdmin: false },
-    { username: 'A.Sahagun', password: 'Alcher Sahagun', fullName: 'Alcher Sahagun', role: 'Knowledge Curator', isAdmin: false }
+    { username: 'R.Sablang', password: 'Redgelson Sablang', fullName: 'Redgelson Sablang', role: 'Researcher', isAdmin: true },
+    { username: 'M.M.Sulit', password: 'Mary Margarette Sulit', fullName: 'Mary Margarette Sulit', role: 'Research Leader', isAdmin: true },
+    { username: 'B.J.Valencia', password: 'Baron James Valencia', fullName: 'Baron James Valencia', role: 'Researcher', isAdmin: false },
+    { username: 'A.L.Santos', password: 'Ashanti Lhane', fullName: 'Ashanti Lhane', role: 'Researcher', isAdmin: false },
+    { username: 'A.Saromo', password: 'Alyana Saromo', fullName: 'Alyana Saromo', role: 'Researcher', isAdmin: false },
+    { username: 'A.Sahagun', password: 'Alcher Sahagun', fullName: 'Alcher Sahagun', role: 'Researcher', isAdmin: false }
   ];
 
   function getUsers() {
