@@ -1,56 +1,4 @@
 services:
-  - type: web
-    name: research-group-backend
-    env: node
-    plan: free
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
-    envVars:
-      - key: SUPABASE_URL
-        value: https://nsdmvgrbzvapavoljzni.supabase.co
-      - key: SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIn0.ghY80cW3fP0LqE5iu4u5uKk9h947LrM6eZ1QhQleZ9k
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5zZG12Z3JienZhcGF2b2xqem5pIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTE3MTY1NCwiZXhwIjoyMTAwNzQ3NjU0fQ.yoeoPajw4e20VILyS5GP-ltQAeIVwwOf2IgfxEYRuas
-      - key: RESEARCH_LOGIN_USERNAME
-        value: R.Sablang
-      - key: RESEARCH_LOGIN_PASSWORD
-        value: Redgelson Sablang
-      - key: RESEARCH_LOGIN_EMAIL
-        value: redgelson@sablang.test
-      - key: RESEARCH_MEMBER_M_MSULIT_USERNAME
-        value: M.M.Sulit
-      - key: RESEARCH_MEMBER_M_MSULIT_PASSWORD
-        value: Mary Margarette Sulit
-      - key: RESEARCH_MEMBER_M_MSULIT_EMAIL
-        value: mary@sulit.test
-      - key: RESEARCH_MEMBER_B_JVALENCIA_USERNAME
-        value: B.J.Valencia
-      - key: RESEARCH_MEMBER_B_JVALENCIA_PASSWORD
-        value: Baron James Valencia
-      - key: RESEARCH_MEMBER_B_JVALENCIA_EMAIL
-        value: baron@valencia.test
-      - key: RESEARCH_MEMBER_A_LSANTOS_USERNAME
-        value: A.L.Santos
-      - key: RESEARCH_MEMBER_A_LSANTOS_PASSWORD
-        value: Ashanti Lhane Santos
-      - key: RESEARCH_MEMBER_A_LSANTOS_EMAIL
-        value: ashanti@santos.test
-      - key: RESEARCH_MEMBER_A_SAROMO_USERNAME
-        value: A.Saromo
-      - key: RESEARCH_MEMBER_A_SAROMO_PASSWORD
-        value: Alyana Saromo
-      - key: RESEARCH_MEMBER_A_SAROMO_EMAIL
-        value: alyana@saromo.test
-      - key: RESEARCH_MEMBER_A_SAHAGUN_USERNAME
-        value: A.Sahagun
-      - key: RESEARCH_MEMBER_A_SAHAGUN_PASSWORD
-        value: Alcher Sahagun
-      - key: RESEARCH_MEMBER_A_SAHAGUN_EMAIL
-        value: alcher@sahagun.test
-      - key: RESEARCH_CREDENTIALS
-        value: '[{"username":"R.Sablang","password":"Redgelson Sablang","email":"redgelson@sablang.test","fullName":"Redgelson Sablang","role":"Researcher","isAdmin":true},{"username":"M.M.Sulit","password":"Mary Margarette Sulit","email":"mary@sulit.test","fullName":"Mary Margarette Sulit","role":"Research Leader","isAdmin":true},{"username":"B.J.Valencia","password":"Baron James Valencia","email":"baron@valencia.test","fullName":"Baron James Valencia","role":"Researcher","isAdmin":false},{"username":"A.L.Santos","password":"Ashanti Lhane Santos","email":"ashanti@santos.test","fullName":"Ashanti Lhane Santos","role":"Researcher","isAdmin":false},{"username":"A.Saromo","password":"Alyana Saromo","email":"alyana@saromo.test","fullName":"Alyana Saromo","role":"Researcher","isAdmin":false},{"username":"A.Sahagun","password":"Alcher Sahagun","email":"alcher@sahagun.test","fullName":"Alcher Sahagun","role":"Researcher","isAdmin":false}]'
-
   - type: static
     name: research-group-frontend
     env: static
@@ -63,4 +11,4 @@ services:
       - key: SUPABASE_ANON_KEY
         value: ""
       - key: BACKEND_URL
-        value: https://research-group-backend-11j3.onrender.com
+        value: https://research-website-11j3.onrender.com
